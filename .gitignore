@@ -3,3 +3,9 @@
 /include
 /simulator
 /.vscode
+README_DARK.md
+alu
+alu.cpp
+/build
+/demo
+/
