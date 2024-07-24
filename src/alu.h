@@ -1,35 +1,23 @@
 #ifndef ALU_H
 #define ALU_H
+#include "isa.h"
 namespace Yuchuan {
 
-enum Opalu {
-  ADD,
-  AND,
-  OR,
-  SLL,
-  SRL,
-  SLT,
-  SLTU,
-  SRA,
-  SUB,
-  XOR,
-};
-
-struct Instruct {
+struct AluInstruct {
   int opcode;
   int value1;
   int value2;
   int target;
   bool busy = false;
 };
-struct Output {
+struct AluOutput {
   int value;
   int target;
   bool OK = false;
 };
 struct ALU {
-  Instruct input;
-  Output output;
+  AluInstruct input;
+  AluOutput output;
   void work() {
     if (output.OK) {
       return;
