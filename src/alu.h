@@ -1,6 +1,7 @@
-#include <bits/stdc++.h>
 #ifndef ALU_H
 #define ALU_H
+namespace Yuchuan {
+
 enum Opalu {
   ADD,
   AND,
@@ -99,4 +100,5 @@ struct ALU {
     return;
   }
 };
+} // namespace Yuchuan
 #endif

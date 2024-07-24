@@ -1,7 +1,8 @@
-#include <bits/stdc++.h>
 #ifndef MEM_H
 #define MEM_H
-enum type { LB, LBU, LH, LHU, LW, SB, SH, SW };
+namespace Yuchuan {
+
+enum Opls { LB, LBU, LH, LHU, LW, SB, SH, SW };
 struct LsInput {
   int value = 0; // register or value to store.
   int addr = 0;
@@ -99,4 +100,5 @@ struct Memory {
     }
   }
 };
+} // namespace Yuchuan
 #endif
