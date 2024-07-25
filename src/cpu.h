@@ -113,6 +113,7 @@ struct CPU {
           }
           if ((instruct.type > 27) && (instruct.type <= 33)) {
             stop = true;
+            to_push.des = instruct.imm;
             new_instruct.imm = instruct.imm;
             if (rf.dependency[instruct.rs1] != -1) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
@@ -153,7 +154,7 @@ struct CPU {
           alu_ins.value1 = rs.output.value[0];
           if (alu_ins.opcode > 17) {
             alu_ins.value2 = rs.output.value[1];
-            if(alu_ins.opcode == JALR) {
+            if (alu_ins.opcode == JALR) {
               alu_ins.opcode = ADD;
             }
           } else {
@@ -204,8 +205,8 @@ struct CPU {
         }
       }
     }
-    if(lsb.output.busy) {
-      if(memory.input.clk == -1) {
+    if (lsb.output.busy) {
+      if (memory.input.clk == -1) {
         LsInput to_ls;
         to_ls.addr = lsb.output.addr;
         to_ls.clk = 0;
@@ -215,21 +216,70 @@ struct CPU {
         lsb.output.busy = false;
       }
     }
-    if(alu.output.busy) {
+    if (alu.output.busy) {
       rob.buffer[alu.output.target].value = alu.output.value;
       rob.buffer[alu.output.target].OK = true;
       alu.output.busy = false;
     }
-    if(memory.output.busy) {
+    if (memory.output.busy) {
       rob.buffer[memory.output.target].value = memory.output.value;
       rob.buffer[memory.output.target].OK = true;
       memory.output.busy = false;
     }
-    if(rob.output.data.busy) {
-      for(int i = 0; i < 32; i++) {
-        if(rf.dependency[i] == rob.output.num) {
+    if (rob.output.data.busy) {
+      rob.output.data.busy = false;
+      for (int i = 0; i < 32; i++) {
+        if (rf.dependency[i] == rob.output.num) {
           rf.dependency[i] = -1;
         }
+      } // This part is to change the data of RF.
+      if (rs.input.query[0] == rob.output.num) {
+        rs.input.query[0] = -1;
+        rs.input.value[0] = rob.output.data.value;
+      }
+      if (rs.input.query[1] == rob.output.num) {
+        rs.input.query[1] = -1;
+        rs.input.value[1] = rob.output.data.value;
+      }
+      for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 2; j++) {
+          if (rs.reserve[i].query[j] == rob.output.num) {
+            rs.reserve[i].query[j] = -1;
+            rs.reserve[i].query[j] = rob.output.data.value;
+          }
+        }
+      } // This part is to modify RS.
+      if (rob.output.data.type <= 2) {
+        now_pc += 4;
+      }
+      if ((rob.output.data.type > 2) && (rob.output.data.type <= 27) &&
+          (rob.output.data.type != JALR)) {
+        reg[rob.output.data.des] = rob.output.data.value;
+        now_pc += 4;
+      }
+      if (rob.output.data.type == LUI) {
+        reg[rob.output.data.des] = rob.output.data.value;
+        now_pc += 4;
+      }
+      if (rob.output.data.type == AUIPC) {
+        reg[rob.output.data.des] = rob.output.data.value;
+        now_pc = rob.output.data.value;
+      }
+      if (rob.output.data.type == HALT) {
+        now_pc = -1;
+      }
+      if (rob.output.data.type == JALR || rob.output.data.type == JAL) {
+        reg[rob.output.data.des] = (now_pc + 4);
+        now_pc = rob.output.data.value;
+        stop = false;
+      }
+      if (rob.output.data.type > 27 && rob.output.data.type < 33) {
+        if(rob.output.data.value != 0) {
+          now_pc = rob.output.data.des;
+        } else {
+          now_pc += 4;
+        }
+        stop = false;
       }
     }
     return std::pair<bool, unsigned char>(false, 0);
