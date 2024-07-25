@@ -4,7 +4,7 @@
 namespace Yuchuan {
 
 struct LsInput {
-  int value = 0; 
+  int value = 0;
   int addr = 0;
   int clk = -1;
   int type = -1;
@@ -28,6 +28,8 @@ struct Memory {
     }
     if (input.clk > 2) {
       input.clk = -1;
+      output.target = input.target;
+      output.busy = true;
       switch (input.type) {
       case LB: {
         bool signal = (mem[input.addr] >> 7) & 1;
@@ -35,14 +37,10 @@ struct Memory {
         if (signal) {
           output.value = output.value | int(0xffffff00);
         }
-        output.target = input.target;
-        output.busy = true;
         break;
       }
       case LBU: {
         output.value = mem[input.addr];
-        output.target = input.target;
-        output.busy = true;
         break;
       }
       case LH: {
@@ -52,15 +50,11 @@ struct Memory {
         if (signal) {
           output.value = output.value | int(0xffff0000);
         }
-        output.target = input.target;
-        output.busy = true;
         break;
       }
       case LHU: {
         output.value = int(mem[input.addr + 1]) << 8;
         output.value += mem[input.addr];
-        output.target = input.target;
-        output.busy = true;
         break;
       }
       case LW: {
@@ -69,21 +63,15 @@ struct Memory {
           output.value <<= 8;
           output.value += mem[input.addr + i];
         }
-        output.target = input.target;
-        output.busy = true;
         break;
       }
       case SB: {
         mem[input.addr] = (input.value) & 0xff;
-        output.busy = true;
-        output.target = input.target;
         break;
       }
       case SH: {
         mem[input.addr + 1] = (input.value >> 8) & 0xff;
         mem[input.addr] = input.value & 0xff;
-        output.busy = true;
-        output.target = input.target;
         break;
       }
       case SW: {
@@ -91,8 +79,6 @@ struct Memory {
           mem[input.addr + i] = input.value & 0xff;
           input.value >>= 8;
         }
-        output.busy = true;
-        output.target = input.target;
         break;
       }
       default: {

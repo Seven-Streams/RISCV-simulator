@@ -9,10 +9,14 @@ struct Buffer {
   bool busy = false;
   bool OK = false;
 };
+struct RobOutput {
+  Buffer data;
+  int num = 0;
+};
 struct ROB {
   Buffer input;
   Buffer buffer[8];
-  Buffer output;
+  RobOutput output;
   int size = 0;
   int head = 0;
   int tail = 0;
@@ -23,11 +27,12 @@ struct ROB {
       tail %= 8;
       size++;
     }
-    if(output.busy) {
+    if(output.data.busy) {
       return;
     }
     if(buffer[head].OK && buffer[head].busy) {
-      output = buffer[head];
+      output.data = buffer[head];
+      output.num = head;
       buffer[head++].busy = false;
       size--;
       head %= 8;

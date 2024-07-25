@@ -215,6 +215,23 @@ struct CPU {
         lsb.output.busy = false;
       }
     }
+    if(alu.output.busy) {
+      rob.buffer[alu.output.target].value = alu.output.value;
+      rob.buffer[alu.output.target].OK = true;
+      alu.output.busy = false;
+    }
+    if(memory.output.busy) {
+      rob.buffer[memory.output.target].value = memory.output.value;
+      rob.buffer[memory.output.target].OK = true;
+      memory.output.busy = false;
+    }
+    if(rob.output.data.busy) {
+      for(int i = 0; i < 32; i++) {
+        if(rf.dependency[i] == rob.output.num) {
+          rf.dependency[i] = -1;
+        }
+      }
+    }
     return std::pair<bool, unsigned char>(false, 0);
   }
 };
