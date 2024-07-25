@@ -46,9 +46,9 @@ struct Memory {
         break;
       }
       case LH: {
-        bool signal = (mem[input.addr] >> 7) & 1;
-        output.value = int(mem[input.addr]) << 8;
-        output.value += mem[input.addr + 1];
+        bool signal = (mem[input.addr + 1] >> 7) & 1;
+        output.value = int(mem[input.addr + 1]) << 8;
+        output.value += mem[input.addr];
         if (signal) {
           output.value = output.value | int(0xffff0000);
         }
@@ -57,15 +57,15 @@ struct Memory {
         break;
       }
       case LHU: {
-        output.value = int(mem[input.addr]) << 8;
-        output.value += mem[input.addr + 1];
+        output.value = int(mem[input.addr + 1]) << 8;
+        output.value += mem[input.addr];
         output.target = input.target;
         output.busy = true;
         break;
       }
       case LW: {
         output.value = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 3; i >= 0; i--) {
           output.value <<= 8;
           output.value += mem[input.addr + i];
         }
@@ -80,14 +80,14 @@ struct Memory {
         break;
       }
       case SH: {
-        mem[input.addr] = (input.value >> 8) & 0xff;
-        mem[input.addr + 1] = input.value & 0xff;
+        mem[input.addr + 1] = (input.value >> 8) & 0xff;
+        mem[input.addr] = input.value & 0xff;
         output.busy = true;
         output.target = input.target;
         break;
       }
       case SW: {
-        for (int i = 3; i >= 0; i--) {
+        for (int i = 0; i < 3; i++) {
           mem[input.addr + i] = input.value & 0xff;
           input.value >>= 8;
         }
