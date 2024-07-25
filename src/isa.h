@@ -19,7 +19,16 @@ enum opcode {
   LW,
   SB,
   SH,
-  SW
+  SW,
+  AUIPC,//This instruction doesn't need to emit to somewhere else.
+  BEQ,
+  BGE,
+  BLT,
+  BNE,
+  BGEU,
+  BLTU,
+  JAL,//This instruction doesn't need to emit to somewhere else.
+  JALR
 };
 }
 #endif

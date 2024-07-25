@@ -26,6 +26,7 @@ struct ALU {
       return;
     }
     output.target = input.target;
+    input.busy = false;
     switch (input.opcode) {
     case ADD: {
       output.value = input.value1 + input.value2;
@@ -79,6 +80,41 @@ struct ALU {
     }
     case XOR: {
       output.value = input.value1 ^ input.value2;
+      output.OK = true;
+      break;
+    }
+    case BEQ: {
+      output.value = input.value1 == input.value2;
+      output.OK = true;
+      break;
+    }
+    case BGE: {
+      output.value = input.value1 >= input.value2;
+      output.OK = true;
+      break;
+    }
+    case BLT: {
+      output.value = input.value1 < input.value2;
+      output.OK = true;
+      break;
+    }
+    case BNE: {
+      output.value = input.value1 != input.value2;
+      output.OK = true;
+      break;
+    }
+    case BGEU: {
+      output.value = (unsigned int)(input.value1) >= (unsigned int)(input.value2);
+      output.OK = true;
+      break;
+    }
+    case BLTU: {
+      output.value = (unsigned int)(input.value1) < (unsigned int)(input.value2);
+      output.OK = true;
+      break;
+    }
+    case JALR: {
+      output.value = input.value1 + input.value2;
       output.OK = true;
       break;
     }

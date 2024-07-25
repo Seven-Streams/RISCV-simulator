@@ -1,9 +1,9 @@
 #ifndef RF_H
 #define RF_H
 namespace Yuchuan {
-struct Rf {
+struct RF {
   int dependency[32];
-  Rf() {
+  RF() {
     for(int i = 0; i < 32; i++) {
       dependency[i] = -1;
     }
