@@ -26,7 +26,8 @@ struct Memory {
     if (output.busy) {
       return;
     }
-    if (input.clk >= 2) {
+    if (input.clk > 2) {
+      input.clk = -1;
       switch (input.type) {
       case LB: {
         bool signal = (mem[input.addr] >> 7) & 1;

@@ -153,6 +153,9 @@ struct CPU {
           alu_ins.value1 = rs.output.value[0];
           if (alu_ins.opcode > 17) {
             alu_ins.value2 = rs.output.value[1];
+            if(alu_ins.opcode == JALR) {
+              alu_ins.opcode = ADD;
+            }
           } else {
             alu_ins.value2 = rs.output.imm;
             switch (alu_ins.opcode) {
@@ -199,6 +202,17 @@ struct CPU {
           }
           alu.input = alu_ins;
         }
+      }
+    }
+    if(lsb.output.busy) {
+      if(memory.input.clk == -1) {
+        LsInput to_ls;
+        to_ls.addr = lsb.output.addr;
+        to_ls.clk = 0;
+        to_ls.type = lsb.output.type;
+        to_ls.target = lsb.output.des;
+        to_ls.value = lsb.output.value;
+        lsb.output.busy = false;
       }
     }
     return std::pair<bool, unsigned char>(false, 0);
