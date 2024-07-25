@@ -277,12 +277,15 @@ struct CPU {
       if (rob.output.data.type == JALR || rob.output.data.type == JAL) {
         reg[rob.output.data.des] = (now_pc + 4);
         now_pc += rob.output.data.value;
+        advanced_pc += rob.output.data.value;
         stop = false;
       }
       if (rob.output.data.type > 27 && rob.output.data.type < 33) {
         if (rob.output.data.value != 0) {
           now_pc = rob.output.data.des;
+          advanced_pc = now_pc;
         } else {
+          advanced_pc += 4;
           now_pc += 4;
         }
         stop = false;

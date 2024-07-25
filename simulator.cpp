@@ -23,7 +23,7 @@ int main() {
   do {
     try{
     status = barris.work();
-    } catch(int &e){
+    } catch(const char* &e){
       std::cout << e << std::endl;
       return -1;
     } 
