@@ -29,7 +29,16 @@ enum opcode {
   BLTU,
   JAL,//This instruction doesn't need to emit to somewhere else.
   JALR,
-  LUI
+  LUI,
+  ADDI,
+  SLTI,
+  SLTIU,
+  XORI,
+  ORI,
+  ANDI,
+  SLLI,
+  SRLI,
+  SRAI
 };
 }
 #endif

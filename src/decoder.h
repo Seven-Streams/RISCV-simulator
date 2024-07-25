@@ -1,4 +1,5 @@
 #include "isa.h"
+#include <cmath>
 #ifndef DECODER_H
 #define DECODER_H
 namespace Yuchuan {
@@ -191,6 +192,145 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     default: {
       throw("Invalid func code in R type!");
+    }
+    }
+  }
+  if (opcode == 0b0100011) { // S type.
+    unsigned char func;
+    func = (reversed[2] >> 4) & (0b0111);
+    ans.rs1 += reversed[1] & (0x0f);
+    ans.rs1 <<= 1;
+    ans.rs1 += (reversed[2] >> 7) & 1;
+    ans.rs2 += reversed[0] & 1;
+    ans.rs2 <<= 4;
+    ans.rs2 += (reversed[1] >> 4) & (0x0f);
+    bool signal = (reversed[0] >> 7) & 1;
+    ans.imm += (reversed[0] >> 1) & (0b01111111);
+    ans.imm <<= 4;
+    ans.imm += reversed[2] & 0x0f;
+    ans.imm <<= 1;
+    ans.imm += (reversed[3] >> 7) & 1;
+    switch (func) {
+      case 0: {
+        ans.type = SB;
+        break;
+      }
+      case 1: {
+        ans.type = SH;
+        break;
+      }
+      case 2: {
+        ans.type = SW;
+        break;
+      }
+      default:{
+        throw("Invalid function code in S type!");
+      }
+    }
+  }
+  if(opcode == 0b1100111 || opcode == 0b0000011 || opcode == 0b0010011) {// type I.
+    unsigned char func;
+    func = (reversed[2] >> 4) & (0b0111);
+    ans.rs1 += reversed[1] & (0x0f);
+    ans.rs1 <<= 1;
+    ans.rs1 += (reversed[2] >> 7) & 1;
+    ans.rd += reversed[2] & (0x0f);
+    ans.rd <<= 1;
+    ans.rd += (reversed[3] >> 7) & 1;
+    ans.imm += reversed[0];
+    ans.imm <<= 4;
+    ans.imm += reversed[1] >> 4;
+    switch (opcode){
+    case 0b1100111: {
+      if(func != 0) {
+        throw("Invalid func code in I!");
+      }
+      ans.type = JALR;
+      break;
+    }
+    case 0b0000011: {
+      switch (func) {
+        case 0: {
+          ans.type = LB;
+          break;
+        }
+        case 1: {
+          ans.type = LH;
+          break;
+        }
+        case 2: {
+          ans.type = LW;
+          break;
+        }
+        case 4:{
+          ans.type = LBU;
+          break;
+        }
+        case 5:{
+          ans.type = LHU;
+          break;
+        }
+        default:{
+          throw("Invalid function code in I type!");
+        }
+      }
+      break;
+    }
+    case 0b0010011: {
+      switch (func) {
+        case 0: {
+          ans.type = ADDI;
+          break;
+        }
+        case 2: {
+          ans.type = SLTI;
+          break;
+        }
+        case 3: {
+          ans.type = SLTIU;
+          break;
+        }
+        case 4: {
+          ans.type = XORI;
+          break;
+        }
+        case 6: {
+          ans.type = ORI;
+          break;
+        }
+        case 7: {
+          ans.type = ANDI;
+          break;
+        }
+        case 1: {
+          ans.type = SLLI;
+          if(ans.imm >= 32 || (ans.imm < 0)) {
+            throw("Wrong Shift number!");
+          }
+          break;
+        }
+        case 5: {
+          int check = (ans.imm >> 5);
+          ans.imm &= 0x0000001f;
+          switch (check) {
+            case 0: {
+              ans.type = SRLI;
+              break;
+            }
+            case 0b0100000: {
+              ans.type = SRAI;
+              break;
+            }
+            default: {
+              throw("Invalid number in SRLI and SRAI!");
+            }
+          }
+          break;
+        }
+        default: {
+          throw("Invalid function number in I type!");
+        }
+      }
     }
     }
   }
