@@ -7,6 +7,7 @@ struct ReservedInstruct {
   int value[2] = {0, 0};
   int query[2] = {-1, -1};
   int des = 0;
+  int imm = 0;
 };
 struct RS {
   ReservedInstruct input;
