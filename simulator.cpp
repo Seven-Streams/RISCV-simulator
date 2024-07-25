@@ -18,10 +18,9 @@ int main() {
       barris.memory.mem[addr++] = to_add;
     }
   }
-  int status = -1;
+  std::pair<bool, int> status;
   do {
     status = barris.work();
-  }while(status == -1);
-  std::cout << status;
-  return 0;
+  }while(!status.first);
+  return status.second;
 }

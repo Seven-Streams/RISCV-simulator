@@ -12,6 +12,10 @@ struct RawInstruction {
 };
 RawInstruction decode(unsigned char instruct[4]) {
   RawInstruction ans;
+  if((instruct[0] == 0x13) && (instruct[1] == 0x05) && (instruct[2] == 0xf0) && (instruct[3] == 0x0f)) {
+    ans.type = HALT;
+    return ans;
+  }
   unsigned char reversed[4] = {instruct[3], instruct[2], instruct[1],
                                instruct[0]};
   unsigned char opcode = reversed[3] & 0b01111111;

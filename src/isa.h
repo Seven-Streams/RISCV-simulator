@@ -38,7 +38,8 @@ enum opcode {
   ANDI,
   SLLI,
   SRLI,
-  SRAI
+  SRAI,
+  HALT
 };
 }
 #endif
