@@ -38,13 +38,17 @@ RawInstruction decode(unsigned char instruct[4]) {
   if (opcode == 0b1101111) { // type J.
     ans.type = JAL;
     bool signal = reversed[0] & 0b10000000;
-    ans.imm += reversed[1] & 0x0f;
+    ans.imm += (reversed[0] >> 7) & 1;
     ans.imm <<= 4;
-    ans.imm += (reversed[2] >> 4) & 0x0f;
+    ans.imm += reversed[1] & 0b00001111;
+    ans.imm <<= 4;
+    ans.imm += reversed[2] >> 4;
     ans.imm <<= 1;
     ans.imm += (reversed[1] >> 4) & 1;
     ans.imm <<= 7;
     ans.imm += reversed[0] & 0b01111111;
+    ans.imm <<= 3;
+    ans.imm += (reversed[1] >> 5);
     ans.imm <<= 1;
     if (signal) {
       ans.imm = 0xfff00000 | ans.imm;
@@ -99,7 +103,7 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     }
   }
-  if (opcode == 0b0010011) { // type R.
+  if (opcode == 0b0110011) { // type R.
     unsigned char func;
     func = (reversed[2] >> 4) & (0b0111);
     ans.rs1 += reversed[1] & (0x0f);
@@ -125,14 +129,14 @@ RawInstruction decode(unsigned char instruct[4]) {
         break;
       }
       default: {
-        throw("Double check failure!");
+        throw("Double check failure ADD!");
       }
       }
       break;
     }
     case 1: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure SLL!");
       } else {
         ans.type = SLL;
       }
@@ -140,7 +144,7 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     case 2: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure SLT!");
       } else {
         ans.type = SLT;
       }
@@ -148,7 +152,7 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     case 3: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure SLTU!");
       } else {
         ans.type = SLTU;
       }
@@ -156,7 +160,7 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     case 4: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure XOR!");
       } else {
         ans.type = XOR;
       }
@@ -173,14 +177,14 @@ RawInstruction decode(unsigned char instruct[4]) {
         break;
       }
       default: {
-        throw("Double check failure!");
+        throw("Double check failure SRL!");
       }
       }
       break;
     }
     case 6: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure OR!");
       } else {
         ans.type = OR;
       }
@@ -188,7 +192,7 @@ RawInstruction decode(unsigned char instruct[4]) {
     }
     case 7: {
       if (check != 0) {
-        throw("Double check failure!");
+        throw("Double check failure AND!");
       } else {
         ans.type = AND;
       }
@@ -234,6 +238,7 @@ RawInstruction decode(unsigned char instruct[4]) {
   }
   if(opcode == 0b1100111 || opcode == 0b0000011 || opcode == 0b0010011) {// type I.
     unsigned char func;
+    bool signal = (reversed[0] >> 7) & 1;
     func = (reversed[2] >> 4) & (0b0111);
     ans.rs1 += reversed[1] & (0x0f);
     ans.rs1 <<= 1;
@@ -244,6 +249,9 @@ RawInstruction decode(unsigned char instruct[4]) {
     ans.imm += reversed[0];
     ans.imm <<= 4;
     ans.imm += reversed[1] >> 4;
+    if(signal) {
+      ans.imm |= 0xfffff000;
+    }
     switch (opcode){
     case 0b1100111: {
       if(func != 0) {

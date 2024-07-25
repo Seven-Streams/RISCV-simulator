@@ -6,6 +6,7 @@
 #include "rf.h"
 #include "rob.h"
 #include "rs.h"
+#include <string>
 #ifndef CPU_H
 #define CPU_H
 namespace Yuchuan {
@@ -84,10 +85,12 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
+            advanced_pc += 4;
           }
           if ((instruct.type > 2) && (instruct.type <= 17)) {
             to_push.des = instruct.rd;
             if (instruct.type == JALR) {
+              advanced_pc -= 4;
               stop = true;
             }
             new_instruct.imm = instruct.imm;
@@ -97,6 +100,7 @@ struct CPU {
               new_instruct.value[0] = reg[instruct.rs1];
             }
             rf.dependency[instruct.rd] = num;
+            advanced_pc += 4;
           }
           if ((instruct.type > 17) && (instruct.type <= 27)) {
             to_push.des = instruct.rd;
@@ -110,6 +114,7 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
+            advanced_pc += 4;
           }
           if ((instruct.type > 27) && (instruct.type <= 33)) {
             stop = true;
@@ -152,7 +157,7 @@ struct CPU {
           alu_ins.opcode = rs.output.opcode;
           alu_ins.target = rs.output.des;
           alu_ins.value1 = rs.output.value[0];
-          if (alu_ins.opcode > 17) {
+          if (alu_ins.opcode >= 17) {
             alu_ins.value2 = rs.output.value[1];
             if (alu_ins.opcode == JALR) {
               alu_ins.opcode = ADD;
@@ -197,7 +202,7 @@ struct CPU {
               break;
             }
             default: {
-              throw("Unexpected opcode in the wire between RS and ALU!");
+              throw(alu_ins.opcode);
             }
             }
           }
@@ -213,6 +218,7 @@ struct CPU {
         to_ls.type = lsb.output.type;
         to_ls.target = lsb.output.des;
         to_ls.value = lsb.output.value;
+        memory.input = to_ls;
         lsb.output.busy = false;
       }
     }
@@ -245,7 +251,7 @@ struct CPU {
         for (int j = 0; j < 2; j++) {
           if (rs.reserve[i].query[j] == rob.output.num) {
             rs.reserve[i].query[j] = -1;
-            rs.reserve[i].query[j] = rob.output.data.value;
+            rs.reserve[i].value[j] = rob.output.data.value;
           }
         }
       } // This part is to modify RS.
@@ -270,11 +276,11 @@ struct CPU {
       }
       if (rob.output.data.type == JALR || rob.output.data.type == JAL) {
         reg[rob.output.data.des] = (now_pc + 4);
-        now_pc = rob.output.data.value;
+        now_pc += rob.output.data.value;
         stop = false;
       }
       if (rob.output.data.type > 27 && rob.output.data.type < 33) {
-        if(rob.output.data.value != 0) {
+        if (rob.output.data.value != 0) {
           now_pc = rob.output.data.des;
         } else {
           now_pc += 4;
@@ -282,6 +288,11 @@ struct CPU {
         stop = false;
       }
     }
+    alu.work();
+    lsb.work();
+    memory.work();
+    rob.work();
+    rs.work();
     return std::pair<bool, unsigned char>(false, 0);
   }
 };

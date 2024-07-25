@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 int main() {
+  freopen("sample.data", "r", stdin);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
@@ -20,7 +21,14 @@ int main() {
   }
   std::pair<bool, int> status;
   do {
+    try{
     status = barris.work();
-  }while(!status.first);
-  return status.second;
+    } catch(int &e){
+      std::cout << e << std::endl;
+      return -1;
+    } 
+    std::cout << status.second << std::endl;
+  } while (!status.first);
+  std::cout << status.second << std::endl;
+  return 0;
 }
