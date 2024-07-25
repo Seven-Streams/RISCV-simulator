@@ -3,6 +3,7 @@
 #include "rf.h"
 #include "rs.h"
 #include "lsb.h"
+#include "rob.h"
 #ifndef CPU_H
 #define CPU_H
 namespace Yuchuan {
@@ -13,6 +14,7 @@ struct CPU {
   RF rf;
   RS rs;
   LSB lsb;
+  ROB rob;
   int work() { return 0; }
 };
 } // namespace Yuchuan
