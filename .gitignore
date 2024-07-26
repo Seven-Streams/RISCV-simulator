@@ -8,4 +8,4 @@ alu
 alu.cpp
 /build
 /demo
-/
+/.cache
