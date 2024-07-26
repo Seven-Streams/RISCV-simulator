@@ -27,7 +27,7 @@ int main() {
       std::cout << e << std::endl;
       return -1;
     } 
-    std::cout << status.second << std::endl;
+    std::cout << barris.now_pc << std::endl;
   } while (!status.first);
   std::cout << status.second << std::endl;
   return 0;

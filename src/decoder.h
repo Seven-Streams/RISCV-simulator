@@ -65,11 +65,13 @@ RawInstruction decode(unsigned char instruct[4]) {
     ans.rs2 <<= 4;
     ans.rs2 += (reversed[1] >> 4) & (0x0f);
     bool signal = (reversed[0] >> 7) & 1;
+    ans.imm += signal;
+    ans.imm <<= 1;
     ans.imm += (reversed[3] >> 7) & 1;
     ans.imm <<= 6;
     ans.imm += (reversed[0] >> 1) & (0b00111111);
     ans.imm <<= 4;
-    ans.imm += reversed[1] & (0xf);
+    ans.imm += reversed[2] & (0xf);
     ans.imm <<= 1;
     if (signal) {
       ans.imm = 0xfffff000 | ans.imm;

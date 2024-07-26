@@ -26,9 +26,6 @@ struct CPU {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
-    if (advanced_pc == 4236) {
-      bool check = false;
-    }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
@@ -303,7 +300,7 @@ struct CPU {
       }
       if (rob.output.data.type > 27 && rob.output.data.type < 33) {
         if (rob.output.data.value != 0) {
-          now_pc = rob.output.data.des;
+          now_pc += rob.output.data.des;
           advanced_pc = now_pc;
         } else {
           advanced_pc += 4;
