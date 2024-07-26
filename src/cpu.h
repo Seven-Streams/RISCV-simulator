@@ -298,7 +298,7 @@ struct CPU {
         reg[rob.output.data.des] = (now_pc + 4);
         now_pc += rob.output.data.value;
       }
-      if (rob.output.data.type > 27 && rob.output.data.type < 33) {
+      if (rob.output.data.type > 27 && rob.output.data.type <= 33) {
         if (rob.output.data.value != 0) {
           now_pc += rob.output.data.des;
           advanced_pc = now_pc;
