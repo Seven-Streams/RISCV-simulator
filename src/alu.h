@@ -44,14 +44,14 @@ struct ALU {
       break;
     }
     case SLL: {
-      output.value = input.value1 << (input.value2 % 32);
+      output.value = input.value1 << (input.value2 & 0b11111);
       output.busy = true;
       break;
     }
     case SRL: {
       unsigned int res;
       res = input.value1;
-      output.value = res >> (input.value2 % 32);
+      output.value = res >> (input.value2 & 0b11111);
       output.busy = true;
       break;
     }
@@ -69,7 +69,15 @@ struct ALU {
       break;
     }
     case SRA: {
-      output.value = input.value1 >> (input.value2 % 32);
+      bool signal;
+      signal = input.value1 & (0x80000000);
+      int st = input.value2 & 0b11111;
+      output.value = input.value1 >> st;
+      if(signal) {
+        for(int i = 0; i < st; st++) {
+          output.value |= (1 << (31 - st));
+        }
+      }
       output.busy = true;
       break;
     }

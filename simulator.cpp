@@ -3,7 +3,8 @@
 #include <iostream>
 #include <string>
 int main() {
-  freopen("array_test1.data", "r", stdin);
+  freopen("basicopt1.data", "r", stdin);
+  freopen("output.data", "w", stdout);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
@@ -25,6 +26,7 @@ int main() {
     status = barris.work();
     } catch(int &e){
       std::cout << e << std::endl;
+      std::cout << "BAD" << std::endl;
       return -1;
     } 
     std::cout << barris.now_pc << std::endl;
