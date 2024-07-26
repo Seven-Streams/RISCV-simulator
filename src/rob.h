@@ -6,6 +6,7 @@ struct Buffer {
   int type = -1;
   int value = -1;
   int des = -1;
+  int now_pc;
   bool busy = false;
   bool OK = false;
 };

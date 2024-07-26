@@ -26,13 +26,17 @@ struct CPU {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
+    if(advanced_pc == 4220) {
+      bool cat = true;
+    }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
       RawInstruction instruct = decode(code);
-      if (!rob.input.busy) {
+      if (rob.size < 8) {
         Buffer to_push;
+        to_push.now_pc = advanced_pc;
         to_push.type = instruct.type;
         to_push.busy = true;
         to_push.OK = false;
