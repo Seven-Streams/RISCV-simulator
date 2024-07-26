@@ -39,7 +39,7 @@ struct ALU {
       break;
     }
     case OR: {
-      output.value = input.value1 & input.value2;
+      output.value = input.value1 | input.value2;
       output.busy = true;
       break;
     }
