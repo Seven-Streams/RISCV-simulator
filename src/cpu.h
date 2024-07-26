@@ -24,7 +24,7 @@ struct CPU {
   bool stop = false;
   std::pair<bool, unsigned char> work() {
     if (now_pc == -1) {
-      return std::pair<bool, unsigned char>(true, reg[0]);
+      return std::pair<bool, unsigned char>(true, reg[10]);
     }
     if (!stop) {
       unsigned char code[4] = {
@@ -260,7 +260,11 @@ struct CPU {
         for (int j = 0; j < 2; j++) {
           if (rs.reserve[i].query[j] == rob.output.num) {
             rs.reserve[i].query[j] = -1;
-            rs.reserve[i].value[j] = rob.output.data.value;
+            if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
+              rs.reserve[i].value[j] = now_pc + 4;
+            } else {
+              rs.reserve[i].value[j] = rob.output.data.value;
+            }
           }
         }
       } // This part is to modify RS.
@@ -285,8 +289,8 @@ struct CPU {
       }
       if (rob.output.data.type == JALR) {
         reg[rob.output.data.des] = (now_pc + 4);
-        now_pc += rob.output.data.value;
-        advanced_pc += rob.output.data.value;
+        now_pc = rob.output.data.value;
+        advanced_pc = rob.output.data.value;
         stop = false;
       }
       if (rob.output.data.type == JAL) {
