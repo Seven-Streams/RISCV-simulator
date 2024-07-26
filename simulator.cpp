@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 int main() {
-  freopen("basicopt1.data", "r", stdin);
+  freopen("bulgarian.data", "r", stdin);
   freopen("output.data", "w", stdout);
   Yuchuan::CPU barris;
   std::string res;

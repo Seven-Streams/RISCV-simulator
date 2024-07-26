@@ -35,7 +35,7 @@ struct Memory {
         bool signal = (mem[input.addr] >> 7) & 1;
         output.value = (mem[input.addr]);
         if (signal) {
-          output.value = output.value | int(0xffffff00);
+          output.value |=0xffffff00;
         }
         break;
       }
@@ -75,7 +75,7 @@ struct Memory {
         break;
       }
       case SW: {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i <= 3; i++) {
           mem[input.addr + i] = input.value & 0xff;
           input.value >>= 8;
         }
