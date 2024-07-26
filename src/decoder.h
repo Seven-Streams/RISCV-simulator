@@ -37,6 +37,7 @@ RawInstruction decode(unsigned char instruct[4]) {
   }
   if (opcode == 0b1101111) { // type J.
     ans.type = JAL;
+    ans.rd = 1;
     bool signal = reversed[0] & 0b10000000;
     ans.imm += (reversed[0] >> 7) & 1;
     ans.imm <<= 4;
@@ -258,6 +259,7 @@ RawInstruction decode(unsigned char instruct[4]) {
         throw("Invalid func code in I!");
       }
       ans.type = JALR;
+      ans.rd = 1;
       break;
     }
     case 0b0000011: {

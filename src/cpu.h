@@ -6,6 +6,7 @@
 #include "rf.h"
 #include "rob.h"
 #include "rs.h"
+#include <cassert>
 #include <string>
 #ifndef CPU_H
 #define CPU_H
@@ -241,11 +242,19 @@ struct CPU {
       } // This part is to change the data of RF.
       if (rs.input.query[0] == rob.output.num) {
         rs.input.query[0] = -1;
-        rs.input.value[0] = rob.output.data.value;
+        if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
+          rs.input.value[0] = now_pc + 4;
+        } else {
+          rs.input.value[0] = rob.output.data.value;
+        }
       }
       if (rs.input.query[1] == rob.output.num) {
         rs.input.query[1] = -1;
-        rs.input.value[1] = rob.output.data.value;
+        if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
+          rs.input.value[0] = now_pc + 4;
+        } else {
+          rs.input.value[1] = rob.output.data.value;
+        }
       }
       for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 2; j++) {
@@ -274,11 +283,15 @@ struct CPU {
       if (rob.output.data.type == HALT) {
         now_pc = -1;
       }
-      if (rob.output.data.type == JALR || rob.output.data.type == JAL) {
+      if (rob.output.data.type == JALR) {
         reg[rob.output.data.des] = (now_pc + 4);
         now_pc += rob.output.data.value;
         advanced_pc += rob.output.data.value;
         stop = false;
+      }
+      if (rob.output.data.type == JAL) {
+        reg[rob.output.data.des] = (now_pc + 4);
+        now_pc += rob.output.data.value;
       }
       if (rob.output.data.type > 27 && rob.output.data.type < 33) {
         if (rob.output.data.value != 0) {

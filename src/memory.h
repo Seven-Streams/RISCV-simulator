@@ -82,7 +82,7 @@ struct Memory {
         break;
       }
       default: {
-        throw("Invalid opcode in memory!");
+        throw(input.type);
       }
       }
     }
