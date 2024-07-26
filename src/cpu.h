@@ -26,15 +26,15 @@ struct CPU {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
-    if(advanced_pc == 4220) {
-      bool cat = true;
+    if (advanced_pc == 4236) {
+      bool check = false;
     }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
       RawInstruction instruct = decode(code);
-      if (rob.size < 8) {
+      if (rob.size < 7) {
         Buffer to_push;
         to_push.now_pc = advanced_pc;
         to_push.type = instruct.type;
@@ -119,6 +119,7 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
+            rf.dependency[instruct.rd] = num;
             advanced_pc += 4;
           }
           if ((instruct.type > 27) && (instruct.type <= 33)) {
@@ -135,7 +136,6 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
-            rf.dependency[instruct.rd] = num;
           }
           rs.input = new_instruct;
           rob.input = to_push;
