@@ -3,8 +3,10 @@
 #include <iostream>
 #include <string>
 int main() {
-  freopen("gcd.data", "r", stdin);
-  // freopen("output.data", "w", stdout);
+  std::string name;
+  std::cin >> name;
+  freopen(name.c_str(), "r", stdin);
+  freopen("output.data", "w", stdout);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
@@ -24,12 +26,12 @@ int main() {
   do {
     try{
     status = barris.work();
-    } catch(char const* &e){
+    } catch(int &e){
       std::cout << e << std::endl;
       std::cout << "BAD" << std::endl;
       return -1;
     } 
   } while (!status.first);
-  std::cout << status.second << std::endl;
+  std::cout << std::dec << status.second << std::endl;
   return 0;
 }

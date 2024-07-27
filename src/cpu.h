@@ -23,18 +23,23 @@ struct CPU {
   int now_pc = 0;
   int advanced_pc = 0;
   int last_pc = 0;
+  int last_reg1 = 0;
   bool stop = false;
   std::pair<bool, unsigned char> work() {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
+    // if (advanced_pc != last_pc) {
+    //   std::cout << std::hex << last_pc << std::endl;
+    //   last_pc = advanced_pc;
+    // }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
       RawInstruction instruct = decode(code);
       if (instruct.type == -1) {
-        throw("WRONG!");
+        bool check = true;
       }
       if (rob.size < 7) {
         Buffer to_push;
@@ -72,7 +77,9 @@ struct CPU {
           to_push.value = instruct.imm;
           rob.input = to_push;
           advanced_pc += instruct.imm;
-          rf.dependency[to_push.des] = num;
+          if (to_push.des != 0) {
+            rf.dependency[to_push.des] = num;
+          }
         }
         if (instruct.type < 34 && (!rs.input.busy)) {
           ReservedInstruct new_instruct;
@@ -94,12 +101,22 @@ struct CPU {
             }
             advanced_pc += 4;
           }
-          if ((instruct.type > 2) && (instruct.type <= 17)) {
+          if (instruct.type == JALR) {
             to_push.des = instruct.rd;
-            if (instruct.type == JALR) {
-              advanced_pc -= 4;
-              stop = true;
+            stop = true;
+            new_instruct.imm = instruct.imm;
+            if (rf.dependency[instruct.rs1] != -1) {
+              new_instruct.query[0] = rf.dependency[instruct.rs1];
+            } else {
+              new_instruct.value[0] = reg[instruct.rs1];
             }
+            if (instruct.rd != 0) {
+              rf.dependency[instruct.rd] = num;
+            }
+          }
+          if ((instruct.type > 2) && (instruct.type <= 17) &&
+              (instruct.type != JALR)) {
+            to_push.des = instruct.rd;
             new_instruct.imm = instruct.imm;
             if (rf.dependency[instruct.rs1] != -1) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
@@ -282,28 +299,38 @@ struct CPU {
       }
       if ((rob.output.data.type > 2) && (rob.output.data.type <= 27) &&
           (rob.output.data.type != JALR)) {
-        reg[rob.output.data.des] = rob.output.data.value;
+        if (rob.output.data.des != 0) {
+          reg[rob.output.data.des] = rob.output.data.value;
+        }
         now_pc += 4;
       }
       if (rob.output.data.type == LUI) {
-        reg[rob.output.data.des] = rob.output.data.value;
+        if (rob.output.data.des != 0) {
+          reg[rob.output.data.des] = rob.output.data.value;
+        }
         now_pc += 4;
       }
       if (rob.output.data.type == AUIPC) {
         now_pc += rob.output.data.value;
-        reg[rob.output.data.des] = now_pc;
+        if (rob.output.data.des != 0) {
+          reg[rob.output.data.des] = now_pc;
+        }
       }
       if (rob.output.data.type == HALT) {
         now_pc = -1;
       }
       if (rob.output.data.type == JALR) {
-        reg[rob.output.data.des] = (now_pc + 4);
+        if (rob.output.data.des != 0) {
+          reg[rob.output.data.des] = (now_pc + 4);
+        }
         now_pc = rob.output.data.value;
         advanced_pc = rob.output.data.value;
         stop = false;
       }
       if (rob.output.data.type == JAL) {
-        reg[rob.output.data.des] = (now_pc + 4);
+        if (rob.output.data.des != 0) {
+          reg[rob.output.data.des] = (now_pc + 4);
+        }
         now_pc += rob.output.data.value;
       }
       if (rob.output.data.type > 27 && rob.output.data.type <= 33) {
