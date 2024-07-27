@@ -20,7 +20,7 @@ struct Memory {
   LsOutput output;
   LsInput input;
   void work() {
-    if(input.addr == 4472) {
+    if (input.addr == 4472) {
       bool check = true;
     }
     if (input.clk != -1) {
@@ -38,7 +38,7 @@ struct Memory {
         bool signal = (mem[input.addr] >> 7) & 1;
         output.value = (mem[input.addr]);
         if (signal) {
-          output.value |=0xffffff00;
+          output.value |= 0xffffff00;
         }
         break;
       }
@@ -70,16 +70,19 @@ struct Memory {
       }
       case SB: {
         mem[input.addr] = (input.value) & 0xff;
+        output.value = input.value;
         break;
       }
       case SH: {
         mem[input.addr + 1] = (input.value >> 8) & 0xff;
         mem[input.addr] = input.value & 0xff;
+        output.value = input.value;
         break;
       }
       case SW: {
         for (int i = 0; i <= 3; i++) {
           mem[input.addr + i] = input.value & 0xff;
+          output.value = input.value;
           input.value >>= 8;
         }
         break;

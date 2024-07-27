@@ -23,24 +23,19 @@ struct CPU {
   int now_pc = 0;
   int advanced_pc = 0;
   int last_pc = 0;
-  int last_reg1 = 0;
+  int clk = 0;
   bool stop = false;
   std::pair<bool, unsigned char> work() {
+    clk++;
     if (now_pc == -1) {
+      std::cout << "Total clock cycles:" << clk << std::endl;
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
-    // if (advanced_pc != last_pc) {
-    //   std::cout << std::hex << last_pc << std::endl;
-    //   last_pc = advanced_pc;
-    // }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
       RawInstruction instruct = decode(code);
-      if (instruct.type == -1) {
-        bool check = true;
-      }
       if (rob.size < 7) {
         Buffer to_push;
         to_push.now_pc = advanced_pc;
@@ -61,7 +56,9 @@ struct CPU {
           to_push.value = advanced_pc + instruct.imm;
           rob.input = to_push;
           advanced_pc += instruct.imm;
-          rf.dependency[to_push.des] = num;
+          if (to_push.des != 0) {
+            rf.dependency[to_push.des] = num;
+          }
         }
         if (instruct.type == LUI) {
           to_push.des = instruct.rd;
@@ -69,7 +66,9 @@ struct CPU {
           to_push.value = instruct.imm;
           rob.input = to_push;
           advanced_pc += 4;
-          rf.dependency[to_push.des] = num;
+          if (to_push.des != 0) {
+            rf.dependency[to_push.des] = num;
+          }
         }
         if (instruct.type == JAL) {
           to_push.des = instruct.rd;
@@ -89,12 +88,14 @@ struct CPU {
           if (instruct.type <= 2) {
             to_push.des = -1;
             new_instruct.imm = instruct.imm;
-            if (rf.dependency[instruct.rs1] != -1) {
+            if (rf.dependency[instruct.rs1] != -1 &&
+                (rf.dependency[instruct.rs1] != num)) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
             } else {
               new_instruct.value[0] = reg[instruct.rs1];
             }
-            if (rf.dependency[instruct.rs2] != -1) {
+            if (rf.dependency[instruct.rs2] != -1 &&
+                (rf.dependency[instruct.rs2] != num)) {
               new_instruct.query[1] = rf.dependency[instruct.rs2];
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
@@ -105,7 +106,8 @@ struct CPU {
             to_push.des = instruct.rd;
             stop = true;
             new_instruct.imm = instruct.imm;
-            if (rf.dependency[instruct.rs1] != -1) {
+            if (rf.dependency[instruct.rs1] != -1 &&
+                (rf.dependency[instruct.rs1] != num)) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
             } else {
               new_instruct.value[0] = reg[instruct.rs1];
@@ -114,43 +116,51 @@ struct CPU {
               rf.dependency[instruct.rd] = num;
             }
           }
-          if ((instruct.type > 2) && (instruct.type <= 17) &&
-              (instruct.type != JALR)) {
+          if ((instruct.type > 2) && (instruct.type < 17)) {
             to_push.des = instruct.rd;
             new_instruct.imm = instruct.imm;
-            if (rf.dependency[instruct.rs1] != -1) {
+            if (rf.dependency[instruct.rs1] != -1 &&
+                (rf.dependency[instruct.rs1] != num)) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
             } else {
               new_instruct.value[0] = reg[instruct.rs1];
             }
-            rf.dependency[instruct.rd] = num;
+            if (instruct.rd != 0) {
+              rf.dependency[instruct.rd] = num;
+            }
             advanced_pc += 4;
           }
           if ((instruct.type > 17) && (instruct.type <= 27)) {
             to_push.des = instruct.rd;
-            if (rf.dependency[instruct.rs1] != -1) {
+            if (rf.dependency[instruct.rs1] != -1 &&
+                (rf.dependency[instruct.rs1] != num)) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
             } else {
               new_instruct.value[0] = reg[instruct.rs1];
             }
-            if (rf.dependency[instruct.rs2] != -1) {
+            if (rf.dependency[instruct.rs2] != -1 &&
+                (rf.dependency[instruct.rs2] != num)) {
               new_instruct.query[1] = rf.dependency[instruct.rs2];
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
-            rf.dependency[instruct.rd] = num;
+            if (instruct.rd != 0) {
+              rf.dependency[instruct.rd] = num;
+            }
             advanced_pc += 4;
           }
           if ((instruct.type > 27) && (instruct.type <= 33)) {
             stop = true;
             to_push.des = instruct.imm;
             new_instruct.imm = instruct.imm;
-            if (rf.dependency[instruct.rs1] != -1) {
+            if (rf.dependency[instruct.rs1] != -1 &&
+                (rf.dependency[instruct.rs1] != num)) {
               new_instruct.query[0] = rf.dependency[instruct.rs1];
             } else {
               new_instruct.value[0] = reg[instruct.rs1];
             }
-            if (rf.dependency[instruct.rs2] != -1) {
+            if (rf.dependency[instruct.rs2] != -1 &&
+                (rf.dependency[instruct.rs2] != num)) {
               new_instruct.query[1] = rf.dependency[instruct.rs2];
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
@@ -271,13 +281,13 @@ struct CPU {
         if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
           rs.input.value[0] = now_pc + 4;
         } else {
-          rs.input.value[0] = rob.output.data.value & (~1);
+          rs.input.value[0] = rob.output.data.value;
         }
       }
       if (rs.input.query[1] == rob.output.num) {
         rs.input.query[1] = -1;
         if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
-          rs.input.value[0] = now_pc + 4;
+          rs.input.value[1] = now_pc + 4;
         } else {
           rs.input.value[1] = rob.output.data.value;
         }

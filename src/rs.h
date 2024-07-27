@@ -16,7 +16,7 @@ struct RS {
   int size = 0;
   void work() {
     if (input.busy && (size < 8)) {
-      for (int cnt = 7; cnt >= 0; cnt--) {
+      for (int cnt = 0; cnt < 8; cnt++) {
         if (!reserve[cnt].busy) {
           reserve[cnt] = input;
           size++;
@@ -26,13 +26,23 @@ struct RS {
       }
     }
     if (!output.busy) {
+      bool OK_tols = true;
       for (int i = 0; i < 8; i++) {
+        if((!OK_tols) && (reserve[i].opcode <= 7)) {
+          continue;
+        }
         if (reserve[i].busy && (reserve[i].query[0] == -1) &&
             (reserve[i].query[1] == -1)) {
           output = reserve[i];
           reserve[i].busy = false;
           size--;
-          break;
+          for(int j = i; j < 7; j++) {
+            reserve[j] = reserve[j + 1];
+          }
+          break;//To make sure it's in order.
+        }
+        if(reserve[i].opcode <= 7) {
+          OK_tols = false;
         }
       }
     }
