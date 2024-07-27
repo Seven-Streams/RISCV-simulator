@@ -29,7 +29,6 @@ int main() {
       std::cout << "BAD" << std::endl;
       return -1;
     } 
-    std::cout << barris.now_pc << std::endl;
   } while (!status.first);
   std::cout << status.second << std::endl;
   return 0;

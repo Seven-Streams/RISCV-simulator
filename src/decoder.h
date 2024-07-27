@@ -26,9 +26,9 @@ RawInstruction decode(unsigned char instruct[4]) {
     ans.imm += reversed[0];
     ans.imm <<= 8;
     ans.imm += reversed[1];
-    ans.imm <<= 8;
+    ans.imm <<= 4;
     ans.imm += reversed[2] & 0xf0;
-    ans.imm <<= 8;
+    ans.imm <<= 12;
     if (opcode == 0b0110111) {
       ans.type = LUI;
     } else {

@@ -8,6 +8,7 @@
 #include "rs.h"
 #include <cassert>
 #include <string>
+#include <iostream>
 #ifndef CPU_H
 #define CPU_H
 namespace Yuchuan {
@@ -21,10 +22,15 @@ struct CPU {
   ROB rob;
   int now_pc = 0;
   int advanced_pc = 0;
+  int last_pc = 0;
   bool stop = false;
   std::pair<bool, unsigned char> work() {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
+    }
+    if(last_pc != now_pc) {
+      std::cout << last_pc << std::endl;
+      last_pc = now_pc;
     }
     if (!stop) {
       unsigned char code[4] = {
@@ -246,7 +252,7 @@ struct CPU {
         if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
           rs.input.value[0] = now_pc + 4;
         } else {
-          rs.input.value[0] = rob.output.data.value;
+          rs.input.value[0] = rob.output.data.value &(~1);
         }
       }
       if (rs.input.query[1] == rob.output.num) {
@@ -283,7 +289,7 @@ struct CPU {
       }
       if (rob.output.data.type == AUIPC) {
         reg[rob.output.data.des] = rob.output.data.value;
-        now_pc = rob.output.data.value;
+        now_pc += rob.output.data.value;
       }
       if (rob.output.data.type == HALT) {
         now_pc = -1;
