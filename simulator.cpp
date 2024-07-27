@@ -3,8 +3,8 @@
 #include <iostream>
 #include <string>
 int main() {
-  freopen("bulgarian.data", "r", stdin);
-  freopen("output.data", "w", stdout);
+  freopen("gcd.data", "r", stdin);
+  // freopen("output.data", "w", stdout);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
@@ -24,7 +24,7 @@ int main() {
   do {
     try{
     status = barris.work();
-    } catch(int &e){
+    } catch(char const* &e){
       std::cout << e << std::endl;
       std::cout << "BAD" << std::endl;
       return -1;

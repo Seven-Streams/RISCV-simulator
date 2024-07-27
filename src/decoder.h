@@ -26,9 +26,9 @@ RawInstruction decode(unsigned char instruct[4]) {
     ans.imm += reversed[0];
     ans.imm <<= 8;
     ans.imm += reversed[1];
-    ans.imm <<= 4;
+    ans.imm <<= 8;
     ans.imm += reversed[2] & 0xf0;
-    ans.imm <<= 12;
+    ans.imm <<= 8;
     if (opcode == 0b0110111) {
       ans.type = LUI;
     } else {
@@ -221,6 +221,9 @@ RawInstruction decode(unsigned char instruct[4]) {
     ans.imm += reversed[2] & 0x0f;
     ans.imm <<= 1;
     ans.imm += (reversed[3] >> 7) & 1;
+    if(signal) {
+      ans.imm |= 0xfffff000;
+    }
     switch (func) {
       case 0: {
         ans.type = SB;

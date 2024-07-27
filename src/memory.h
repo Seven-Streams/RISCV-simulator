@@ -20,6 +20,9 @@ struct Memory {
   LsOutput output;
   LsInput input;
   void work() {
+    if(input.addr == 4472) {
+      bool check = true;
+    }
     if (input.clk != -1) {
       input.clk++;
     }

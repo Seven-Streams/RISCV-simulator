@@ -7,8 +7,8 @@
 #include "rob.h"
 #include "rs.h"
 #include <cassert>
-#include <string>
 #include <iostream>
+#include <string>
 #ifndef CPU_H
 #define CPU_H
 namespace Yuchuan {
@@ -28,15 +28,14 @@ struct CPU {
     if (now_pc == -1) {
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
-    if(last_pc != now_pc) {
-      std::cout << last_pc << std::endl;
-      last_pc = now_pc;
-    }
     if (!stop) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
       RawInstruction instruct = decode(code);
+      if (instruct.type == -1) {
+        throw("WRONG!");
+      }
       if (rob.size < 7) {
         Buffer to_push;
         to_push.now_pc = advanced_pc;
@@ -147,6 +146,9 @@ struct CPU {
     }
     if (rs.output.busy) {
       if (rs.output.opcode <= 7) {
+        if (rs.output.opcode == -1) {
+          bool check = true;
+        }
         if (!lsb.input.busy) {
           rs.output.busy = false;
           LSBInstruct lsb_ins;
@@ -252,7 +254,7 @@ struct CPU {
         if (rob.output.data.type == JAL || rob.output.data.type == JALR) {
           rs.input.value[0] = now_pc + 4;
         } else {
-          rs.input.value[0] = rob.output.data.value &(~1);
+          rs.input.value[0] = rob.output.data.value & (~1);
         }
       }
       if (rs.input.query[1] == rob.output.num) {
@@ -288,8 +290,8 @@ struct CPU {
         now_pc += 4;
       }
       if (rob.output.data.type == AUIPC) {
-        reg[rob.output.data.des] = rob.output.data.value;
         now_pc += rob.output.data.value;
+        reg[rob.output.data.des] = now_pc;
       }
       if (rob.output.data.type == HALT) {
         now_pc = -1;
