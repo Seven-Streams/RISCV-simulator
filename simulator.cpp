@@ -28,6 +28,6 @@ int main() {
       return -1;
     }
   } while (!status.first);
-  std::cout << std::dec << status.second << std::endl;
+  std::cout << status.second << std::endl;
   return status.second;
 }
