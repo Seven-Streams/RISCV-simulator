@@ -4,7 +4,12 @@ namespace Yuchuan {
 struct RF {
   int dependency[32];
   RF() {
-    for(int i = 0; i < 32; i++) {
+    for (int i = 0; i < 32; i++) {
+      dependency[i] = -1;
+    }
+  }
+  void clean() {
+    for (int i = 0; i < 32; i++) {
       dependency[i] = -1;
     }
   }

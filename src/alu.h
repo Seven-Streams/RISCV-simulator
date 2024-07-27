@@ -131,6 +131,11 @@ struct ALU {
     }
     return;
   }
+  void clean() {
+    input.busy = false;
+    output.busy = false;
+    return;
+  }
 };
 } // namespace Yuchuan
 #endif

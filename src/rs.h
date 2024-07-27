@@ -48,6 +48,15 @@ struct RS {
     }
     return;
   }
+  void clean() {
+    input.busy = false;
+    output.busy = false;
+    size = 0;
+    for(int i = 0; i < 8; i++) {
+      reserve[i].busy = false;
+    }
+    return;
+  }
 };
 } // namespace Yuchuan
 

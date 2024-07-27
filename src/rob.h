@@ -40,6 +40,17 @@ struct ROB {
     }
     return;
   }
+  void clean() {
+    input.busy = false;
+    output.data.busy = false;
+    head = 0;
+    tail = 0;
+    size = 0;
+    for(int i = 0; i < 8; i++) {
+      buffer[i].busy = false;
+    }
+    return;
+  }
 };
 }
 #endif

@@ -27,6 +27,14 @@ struct LSB {
     size--;
     return;
   }
+  void clean() {
+    input.busy = false;
+    output.busy = false;
+    size = 0;
+    for(int i = 0; i < 3; i++) {
+      buffer[i].busy = false;
+    }
+  }
 };
 } // namespace Yuchuan
 #endif
