@@ -39,7 +39,7 @@ struct CPU {
     WireLSBOut();
     WireALUOut();
     WireMemoryOut();
-    
+    WireRobOut();
     if (!memory.reset) {
       alu.work();
       lsb.work();

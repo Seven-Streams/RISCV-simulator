@@ -20,13 +20,7 @@ int main() {
   }
   std::pair<bool, int> status;
   do {
-    try {
-      status = barris.work();
-    } catch (int &e) {
-      std::cout << e << std::endl;
-      std::cout << "BAD" << std::endl;
-      return -1;
-    }
+    status = barris.work();
   } while (!status.first);
   std::cout << status.second << std::endl;
   return status.second;
