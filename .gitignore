@@ -3,13 +3,7 @@
 /include
 /simulator
 /.vscode
-README_DARK.md
-alu
-alu.cpp
 /build
 /demo
 /.cache
-/dark.cpp
-/dark
-/array_test1.data
-/array_test1.dump
+/AC

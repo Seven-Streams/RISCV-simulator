@@ -24,6 +24,9 @@ struct CPU {
   int advanced_pc = 0;
   int last_pc = 0;
   int clk = 0;
+  int predictor = 0;
+  bool predictions[8];
+  int pre_size = 0;
   bool stop = false;
   std::pair<bool, unsigned char> work() {
     clk++;
@@ -31,7 +34,23 @@ struct CPU {
       std::cout << "Total clock cycles:" << clk << std::endl;
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
-    if (!stop) {
+    GetInstruct();
+    WireRSOut();
+    WireLSBOut();
+    WireALUOut();
+    WireMemoryOut();
+    
+    if (!memory.reset) {
+      alu.work();
+      lsb.work();
+      rob.work();
+      rs.work();
+    }
+    memory.work();
+    return std::pair<bool, unsigned char>(false, 0);
+  }
+  void GetInstruct() {
+    if ((!stop) && (!memory.reset)) {
       unsigned char code[4] = {
           memory.mem[advanced_pc], memory.mem[advanced_pc + 1],
           memory.mem[advanced_pc + 2], memory.mem[advanced_pc + 3]};
@@ -150,7 +169,6 @@ struct CPU {
             advanced_pc += 4;
           }
           if ((instruct.type > 27) && (instruct.type <= 33)) {
-            stop = true;
             to_push.des = instruct.imm;
             new_instruct.imm = instruct.imm;
             if (rf.dependency[instruct.rs1] != -1 &&
@@ -165,12 +183,21 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
+            if (predictor >= 2) {
+              predictions[pre_size++] = true;
+              advanced_pc += instruct.imm;
+            } else {
+              predictions[pre_size++] = false;
+              advanced_pc += 4;
+            }
           }
           rs.input = new_instruct;
           rob.input = to_push;
         }
       }
     }
+  }
+  void WireRSOut() {
     if (rs.output.busy) {
       if (rs.output.opcode <= 7) {
         if (rs.output.opcode == -1) {
@@ -247,6 +274,8 @@ struct CPU {
         }
       }
     }
+  }
+  void WireLSBOut() {
     if (lsb.output.busy) {
       if (memory.input.clk == -1) {
         LsInput to_ls;
@@ -259,16 +288,22 @@ struct CPU {
         lsb.output.busy = false;
       }
     }
+  }
+  void WireALUOut() {
     if (alu.output.busy) {
       rob.buffer[alu.output.target].value = alu.output.value;
       rob.buffer[alu.output.target].OK = true;
       alu.output.busy = false;
     }
+  }
+  void WireMemoryOut() {
     if (memory.output.busy) {
       rob.buffer[memory.output.target].value = memory.output.value;
       rob.buffer[memory.output.target].OK = true;
       memory.output.busy = false;
     }
+  }
+  void WireRobOut() {
     if (rob.output.data.busy) {
       rob.output.data.busy = false;
       for (int i = 0; i < 32; i++) {
@@ -305,6 +340,7 @@ struct CPU {
         }
       } // This part is to modify RS.
       if (rob.output.data.type <= 2) {
+        memory.update();
         now_pc += 4;
       }
       if ((rob.output.data.type > 2) && (rob.output.data.type <= 27) &&
@@ -345,21 +381,50 @@ struct CPU {
       }
       if (rob.output.data.type > 27 && rob.output.data.type <= 33) {
         if (rob.output.data.value != 0) {
+          if (predictor < 3) {
+            predictor++;
+          }
           now_pc += rob.output.data.des;
-          advanced_pc = now_pc;
+          if (predictions[0]) {
+            pre_size--;
+            for (int i = 0; i < pre_size; i++) {
+              predictions[i] = predictions[i + 1];
+            }
+          } else {
+            advanced_pc = now_pc;
+            stop = false;
+            alu.clean();
+            lsb.clean();
+            rf.clean();
+            rob.clean();
+            rs.clean();
+            memory.snap();
+            pre_size = 0;
+          }
         } else {
-          advanced_pc += 4;
           now_pc += 4;
+          if (predictor > 0) {
+            predictor--;
+          }
+          if (!predictions[0]) {
+            pre_size--;
+            for (int i = 0; i < pre_size; i++) {
+              predictions[i] = predictions[i + 1];
+            }
+          } else {
+            advanced_pc = now_pc;
+            stop = false;
+            alu.clean();
+            lsb.clean();
+            rf.clean();
+            rob.clean();
+            rs.clean();
+            memory.snap();
+            pre_size = 0;
+          }
         }
-        stop = false;
       }
     }
-    alu.work();
-    lsb.work();
-    memory.work();
-    rob.work();
-    rs.work();
-    return std::pair<bool, unsigned char>(false, 0);
   }
 };
 } // namespace Yuchuan

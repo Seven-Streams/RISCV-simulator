@@ -22,7 +22,8 @@ int main() {
   do {
     try {
       status = barris.work();
-    } catch (...) {
+    } catch (int &e) {
+      std::cout << e << std::endl;
       std::cout << "BAD" << std::endl;
       return -1;
     }

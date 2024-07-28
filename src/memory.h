@@ -24,6 +24,9 @@ struct Memory {
   bool reset = false;
   void work() {
     if (reset) {
+      if ((reserve_size == 0) && (input.clk == -1)) {
+        reset = false;
+      }
       if ((reserve_size != 0) && (input.clk != -1)) {
         input = reserved[--reserve_size];
         input.clk = 0;
