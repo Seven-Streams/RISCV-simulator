@@ -17,11 +17,18 @@ struct LsOutput {
 };
 struct Memory {
   unsigned char mem[0x100000];
+  LsInput reserved[8];
   LsOutput output;
   LsInput input;
+  int reserve_size = 0;
+  bool reset = false;
   void work() {
-    if (input.addr == 4472) {
-      bool check = true;
+    if (reset) {
+      if ((reserve_size != 0) && (input.clk != -1)) {
+        input = reserved[--reserve_size];
+        input.clk = 0;
+        input.target = -1;
+      }
     }
     if (input.clk != -1) {
       input.clk++;
@@ -71,12 +78,32 @@ struct Memory {
       case SB: {
         mem[input.addr] = (input.value) & 0xff;
         output.value = input.value;
+        int stored = 0;
+        for (int i = 3; i >= 0; i--) {
+          stored <<= 8;
+          stored += mem[input.addr + i];
+        }
+        if (!reset) {
+          reserved[reserve_size].type = SW;
+          reserved[reserve_size].addr = input.addr;
+          reserved[reserve_size++].value = stored;
+        }
         break;
       }
       case SH: {
         mem[input.addr + 1] = (input.value >> 8) & 0xff;
         mem[input.addr] = input.value & 0xff;
         output.value = input.value;
+        int stored = 0;
+        for (int i = 3; i >= 0; i--) {
+          stored <<= 8;
+          stored += mem[input.addr + i];
+        }
+        if (!reset) {
+          reserved[reserve_size].type = SW;
+          reserved[reserve_size].addr = input.addr;
+          reserved[reserve_size++].value = stored;
+        }
         break;
       }
       case SW: {
@@ -85,6 +112,16 @@ struct Memory {
           output.value = input.value;
           input.value >>= 8;
         }
+        int stored = 0;
+        for (int i = 3; i >= 0; i--) {
+          stored <<= 8;
+          stored += mem[input.addr + i];
+        }
+        if (!reset) {
+          reserved[reserve_size].type = SW;
+          reserved[reserve_size].addr = input.addr;
+          reserved[reserve_size++].value = stored;
+        }
         break;
       }
       default: {
@@ -92,6 +129,23 @@ struct Memory {
       }
       }
     }
+    if (output.target == -1) {
+      output.busy = false;
+    }
+    return;
+  }
+  void update() {
+    reserve_size--;
+    for (int i = 0; i < reserve_size; i++) {
+      reserved[i] = reserved[i + 1];
+    }
+    return;
+  }
+  void snap() {
+    reset = true;
+    output.busy = false;
+    input.clk = -1;
+    return;
   }
 };
 } // namespace Yuchuan
