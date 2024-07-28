@@ -4,6 +4,7 @@
 #include "lsb.h"
 #include "memory.h"
 #include "rf.h"
+#include "predictor.h"
 #include "rob.h"
 #include "rs.h"
 #include <cassert>
@@ -20,17 +21,20 @@ struct CPU {
   RS rs;
   LSB lsb;
   ROB rob;
+  Predictor pre;
   int now_pc = 0;
   int advanced_pc = 0;
   int last_pc = 0;
+  int correct = 0;
+  int total = 0;
   int clk = 0;
-  int predictor = 0;
   bool predictions[8];
   int pre_size = 0;
   bool stop = false;
   std::pair<bool, unsigned char> work() {
     clk++;
     if (now_pc == -1) {
+      std::cerr << "Prediction accuracy:" << (double(correct) / double(total) * 100) << "%\n";
       std::cerr << "Total clock cycles:" << clk << std::endl;
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
@@ -183,7 +187,7 @@ struct CPU {
             } else {
               new_instruct.value[1] = reg[instruct.rs2];
             }
-            if (predictor >= 2) {
+            if (pre.Predict(advanced_pc)) {
               predictions[pre_size++] = true;
               advanced_pc += instruct.imm;
             } else {
@@ -381,11 +385,11 @@ struct CPU {
       }
       if (rob.output.data.type > 27 && rob.output.data.type <= 33) {
         if (rob.output.data.value != 0) {
-          if (predictor < 3) {
-            predictor++;
-          }
+          pre.update(now_pc, true);
+          total++;
           now_pc += rob.output.data.des;
           if (predictions[0]) {
+            correct++;
             pre_size--;
             for (int i = 0; i < pre_size; i++) {
               predictions[i] = predictions[i + 1];
@@ -402,11 +406,11 @@ struct CPU {
             pre_size = 0;
           }
         } else {
+          total++;
           now_pc += 4;
-          if (predictor > 0) {
-            predictor--;
-          }
+          pre.update(now_pc, false);
           if (!predictions[0]) {
+            correct++;
             pre_size--;
             for (int i = 0; i < pre_size; i++) {
               predictions[i] = predictions[i + 1];

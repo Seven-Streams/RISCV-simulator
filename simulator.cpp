@@ -3,6 +3,9 @@
 #include <iostream>
 #include <string>
 int main() {
+  std::string name;
+  std::cin >> name;
+  freopen(name.c_str(), "r", stdin);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
