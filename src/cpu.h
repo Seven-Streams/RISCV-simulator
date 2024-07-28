@@ -31,7 +31,7 @@ struct CPU {
   std::pair<bool, unsigned char> work() {
     clk++;
     if (now_pc == -1) {
-      std::cout << "Total clock cycles:" << clk << std::endl;
+      std::cerr << "Total clock cycles:" << clk << std::endl;
       return std::pair<bool, unsigned char>(true, reg[10]);
     }
     GetInstruct();

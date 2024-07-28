@@ -23,5 +23,5 @@ int main() {
     status = barris.work();
   } while (!status.first);
   std::cout << status.second << std::endl;
-  return status.second;
+  return 0;
 }
