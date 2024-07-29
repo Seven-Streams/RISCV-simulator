@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 int main() {
-  // std::string name;
-  // std::cin >> name;
-  // freopen(name.c_str(), "r", stdin);
+  std::string name;
+  std::cin >> name;
+  freopen(name.c_str(), "r", stdin);
   Yuchuan::CPU barris;
   std::string res;
   unsigned int addr;
@@ -21,6 +21,7 @@ int main() {
       barris.memory.mem[addr++] = to_add;
     }
   }
+  int last = 0;
   std::pair<bool, int> status;
   do {
     status = barris.work();

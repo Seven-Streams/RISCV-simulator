@@ -7,7 +7,6 @@
 #include "predictor.h"
 #include "rob.h"
 #include "rs.h"
-#include <cassert>
 #include <iostream>
 #include <string>
 #ifndef CPU_H
